@@ -1,86 +1,144 @@
-//
-//  ContentView.swift
-//  RoommateFinder
-//
-//  Created by Lokeshwar Reddy Malli reddy on 2/10/25.
-//
-
 import SwiftUI
-import CoreData
+import GoogleSignIn
+import AuthenticationServices
+
 
 struct ContentView: View {
-    @Environment(\.managedObjectContext) private var viewContext
+    @StateObject var authVM = AuthViewModel()
+    @State private var phoneNumber: String = ""
+    @State private var otpCode: String = ""
+    @State private var isOTPFieldVisible = false
+    @State private var selectedCountryCode = "+1" // Default country code (USA)
 
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Item.timestamp, ascending: true)],
-        animation: .default)
-    private var items: FetchedResults<Item>
+    let countryCodes = ["+1 (USA)", "+91 (India)", "+44 (UK)", "+61 (Australia)", "+49 (Germany)"]
 
     var body: some View {
-        NavigationView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp!, formatter: itemFormatter)")
-                    } label: {
-                        Text(item.timestamp!, formatter: itemFormatter)
+        ZStack {
+            VStack(spacing: 20) {
+                Text("Welcome to Roommate Finder")
+                    .font(.title)
+                    .bold()
+                    .padding()
+
+                // Phone Number Authentication UI
+                VStack {
+                    HStack {
+                        // Country Code Picker
+                        Menu {
+                            ForEach(countryCodes, id: \.self) { code in
+                                Button(action: {
+                                    selectedCountryCode = code.components(separatedBy: " ").first ?? "+1"
+                                }) {
+                                    Text(code)
+                                }
+                            }
+                        } label: {
+                            Text(selectedCountryCode)
+                                .font(.system(size: 18))
+                                .foregroundColor(.blue)
+                                .padding()
+                                .background(Color(.systemGray6))
+                                .cornerRadius(8)
+                        }
+
+                        // Phone Number Input
+                        TextField("Enter Phone Number", text: $phoneNumber)
+                            .keyboardType(.phonePad)
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .cornerRadius(8)
+                            .onTapGesture {
+                                hideKeyboard()
+                            }
+                    }
+
+                    // Send OTP Button
+                    Button(action: {
+                        let fullPhoneNumber = selectedCountryCode + phoneNumber
+                        authVM.sendOTP(to: fullPhoneNumber)
+                        isOTPFieldVisible = true
+                        hideKeyboard() // Hide keyboard after pressing the button
+                    }) {
+                        Text("Send OTP")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.blue)
+                            .cornerRadius(8)
+                    }
+                    .padding(.top, 10)
+
+                    if isOTPFieldVisible {
+                        TextField("Enter OTP", text: $otpCode)
+                            .keyboardType(.numberPad)
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .cornerRadius(8)
+                            .onTapGesture {
+                                hideKeyboard()
+                            }
+
+                        Button(action: {
+                            authVM.verifyOTP(otpCode)
+                            hideKeyboard() // Hide keyboard after pressing the button
+                        }) {
+                            Text("Verify OTP")
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.green)
+                                .cornerRadius(8)
+                        }
+                        .padding(.top, 10)
                     }
                 }
-                .onDelete(perform: deleteItems)
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
+                .padding()
+
+                // Apple Sign-In Button
+                SignInWithAppleButton(.signIn) { request in
+                    request.requestedScopes = [.fullName, .email]
+                } onCompletion: { result in
+                    switch result {
+                    case .success:
+                        authVM.signInWithApple()
+                    case .failure(let error):
+                        print("Apple Sign-In Error: \(error.localizedDescription)")
                     }
                 }
-            }
-            Text("Select an item")
-        }
-    }
+                .frame(height: 50)
+                .cornerRadius(10)
+                .padding()
 
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
+                // Google Sign-In Button
+                Button(action: {
+                    authVM.signInWithGoogle()
+                }) {
+                    HStack {
+                        Image(systemName: "globe") // Placeholder for Google icon
+                        Text("Sign in with Google")
+                            .font(.system(size: 18, weight: .medium))
+                    }
+                    .foregroundColor(.white)
+                    .frame(width: 250, height: 50)
+                    .background(Color.red)
+                    .cornerRadius(10)
+                }
+                .padding()
 
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            offsets.map { items[$0] }.forEach(viewContext.delete)
-
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+                if authVM.isLoggedIn {
+                    Text("You are logged in!")
+                        .foregroundColor(.green)
+                        .bold()
+                }
             }
         }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            hideKeyboard()
+        }
+        .padding()
     }
 }
 
-private let itemFormatter: DateFormatter = {
-    let formatter = DateFormatter()
-    formatter.dateStyle = .short
-    formatter.timeStyle = .medium
-    return formatter
-}()
-
-#Preview {
-    ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
-}

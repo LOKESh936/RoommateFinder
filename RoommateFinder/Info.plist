@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.157264039865-1ol3uj4bmjivt6bh3vntj646ochein7p</string>
+			</array>
+		</dict>
+	</array>
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<true/>
+	<key>GIDClientID</key>
+	<string>157264039865-1ol3uj4bmjivt6bh3vntj646ochein7p.apps.googleusercontent.com</string>
+	<key>NSAllowsArbitraryLoads</key>
+	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
+</dict>
+</plist>

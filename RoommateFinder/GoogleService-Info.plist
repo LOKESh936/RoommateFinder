@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CLIENT_ID</key>
+	<string>157264039865-1ol3uj4bmjivt6bh3vntj646ochein7p.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.157264039865-1ol3uj4bmjivt6bh3vntj646ochein7p</string>
 	<key>API_KEY</key>
 	<string>AIzaSyC_pJj2rBmlM9uYfSaAQPIQzYvG_ImR7Zk</string>
 	<key>GCM_SENDER_ID</key>
@@ -15,15 +19,15 @@
 	<key>STORAGE_BUCKET</key>
 	<string>roommatefinder-938ef.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
-	<false></false>
+	<false/>
 	<key>IS_ANALYTICS_ENABLED</key>
-	<false></false>
+	<false/>
 	<key>IS_APPINVITE_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>IS_GCM_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>IS_SIGNIN_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>GOOGLE_APP_ID</key>
 	<string>1:157264039865:ios:57b2b15f327ad57224f068</string>
 </dict>
